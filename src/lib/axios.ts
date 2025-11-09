@@ -1,14 +1,16 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 
+// const localbasurl = "http://localhost:3000/api"
+const localbasurl = "https://prime-post-backend.onrender.com/api"
 // Primary axios instance used across the app
 export const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: localbasurl,
   withCredentials: true,
 })
 
 // A separate client without interceptors to call the refresh endpoint
 export const refreshClient = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: localbasurl,
   withCredentials: true,
 })
 

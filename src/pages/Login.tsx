@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,6 +13,44 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>
 
+type ApiErrorPayload = {
+  msg?: string
+  status?: boolean
+  message?: string
+  [key: string]: unknown
+}
+
+function getTokenFromResponse(res: unknown): string | undefined {
+  if (res && typeof res === 'object') {
+    const obj = res as Record<string, unknown>
+    const accessToken = obj['accessToken']
+    const token = obj['token']
+    if (typeof accessToken === 'string') return accessToken
+    if (typeof token === 'string') return token
+  }
+  return undefined
+}
+
+function getErrorPayload(err: unknown): ApiErrorPayload | null {
+  if (err && typeof err === 'object') {
+    const maybe = err as { response?: { data?: unknown } }
+    const data = maybe.response?.data
+    if (data && typeof data === 'object') {
+      return data
+    }
+  }
+  return null
+}
+
+function getErrorMessage(payload: ApiErrorPayload | null, err: unknown): string {
+  const msgVal = payload ? payload['msg'] : undefined
+  const messageVal = payload ? payload['message'] : undefined
+  if (typeof msgVal === 'string') return msgVal
+  if (typeof messageVal === 'string') return messageVal
+  if (err instanceof Error && typeof err.message === 'string') return err.message
+  return 'Login failed'
+}
+
 const Login: React.FC = () => {
   const {
     register,
@@ -25,11 +63,15 @@ const Login: React.FC = () => {
 
   const { mutateAsync, isPending } = useLogin()
   const navigate = useNavigate()
+  const [loginError, setLoginError] = useState<string | null>(null)
+  const [loginErrorRaw, setLoginErrorRaw] = useState<ApiErrorPayload | null>(null)
 
   const onSubmit = async (values: LoginValues) => {
     try {
+      setLoginError(null)
+      setLoginErrorRaw(null)
       const res = await mutateAsync(values)
-      const token = (res as any)?.accessToken || (res as any)?.token
+      const token = getTokenFromResponse(res)
       if (token) {
         try {
           localStorage.setItem('accessToken', token)
@@ -38,9 +80,12 @@ const Login: React.FC = () => {
         }
       }
       navigate('/dashboard')
-    } catch (err: any) {
-      const serverMsg = err?.response?.data?.message || err?.message || 'Login failed'
+    } catch (err: unknown) {
+      const errData = getErrorPayload(err)
+      const serverMsg = getErrorMessage(errData, err)
       message.error(serverMsg)
+      setLoginError(serverMsg)
+      setLoginErrorRaw(errData)
     }
   }
 
@@ -60,6 +105,13 @@ const Login: React.FC = () => {
           <div className="text-xl font-semibold text-gray-800">Log in</div>
           <p className="text-sm text-gray-500 mt-1">Welcome back! Please enter your details.</p>
         </div>
+
+        {loginError && (
+          <div className="mb-3 rounded-md border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm">
+            {loginError}
+          </div>
+        )}
+        {/* Raw error payload intentionally not displayed */}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
