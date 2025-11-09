@@ -10,7 +10,7 @@ const signupSchema = z.object({
   name: z.string().min(1, "Please enter your name"),
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "At least 6 characters"),
-  role: z.enum(["user", "admin"], { required_error: "Please select a role" }),
+  role: z.enum(["user", "admin"]),
 });
 
 type SignupValues = z.infer<typeof signupSchema>;

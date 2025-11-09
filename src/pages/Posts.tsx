@@ -243,34 +243,48 @@ const Posts: React.FC = () => {
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined
       await api.delete(`/post/delete/${id}`, { headers })
       message.success('Deleted')
-      fetchPosts(currentPage)
+      
+      // Remove the post from local state immediately
+      setPosts(prevPosts => prevPosts.filter(post => post._id !== id))
+      
+      // Refresh current page to ensure consistency
+      fetchPosts(cursor)
     } catch (err) {
-      message.error('Delete failed')
+      console.log(err)
     }
   }
 
-  const handleCreate = async (vals: any) => {
-    try {
-      const token = await ensureToken()
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined
-      const payload = {
-        content: vals.content,
-        platform: vals.platform,
-        scheduledAt: vals.scheduledAt ? vals.scheduledAt.toISOString() : undefined,
-        status: vals.status,
-        metadata: {
-          hashtags: vals.hashtags ? vals.hashtags.split(',').map((s: string) => s.trim()) : [],
-          wordCount: vals.content ? vals.content.split(/\s+/).filter(Boolean).length : 0,
-        },
-      }
-      await api.post('/post/create', payload, { headers })
-      message.success('Created')
-      setCreateVisible(false)
-      fetchPosts(currentPage)
-    } catch (err) {
-      message.error('Create failed')
+ const handleCreate = async (vals: any) => {
+  try {
+    const token = await ensureToken()
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined
+    const payload = {
+      content: vals.content,
+      platform: vals.platform,
+      scheduledAt: vals.scheduledAt ? vals.scheduledAt.toISOString() : undefined,
+      status: vals.status,
+      metadata: {
+        hashtags: vals.hashtags ? vals.hashtags.split(',').map((s: string) => s.trim()) : [],
+        wordCount: vals.content ? vals.content.split(/\s+/).filter(Boolean).length : 0,
+      },
     }
+
+    const response = await api.post('/post/create', payload, { headers })
+    const newPost = response.data?.data || { ...payload, _id: Date.now().toString(), createdAt: new Date().toISOString() }
+
+    // Optimistically update table
+    setPosts(prevPosts => [newPost, ...prevPosts]) 
+    message.success('Post created!')
+
+    // Close modal
+    setCreateVisible(false)
+    form.resetFields()
+  } catch (err) {
+    console.error(err)
+    message.error('Create failed')
   }
+}
+
 
   const handleUpdate = async (vals: any) => {
     if (!editing) return
@@ -287,10 +301,20 @@ const Posts: React.FC = () => {
           wordCount: vals.content ? vals.content.split(/\s+/).filter(Boolean).length : 0,
         },
       }
-      await api.post(`/post/update/${editing._id}`, payload, { headers })
+      const response = await api.post(`/post/update/${editing._id}`, payload, { headers })
       message.success('Updated')
       setEditVisible(false)
-      fetchPosts(currentPage)
+      
+      // Update the post in the local state immediately
+      const updatedPost = response.data?.data || { ...editing, ...payload }
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post._id === editing._id ? { ...post, ...updatedPost } : post
+        )
+      )
+      
+      // Refresh current page to ensure consistency
+      fetchPosts(cursor)
     } catch (err) {
       message.error('Update failed')
     }

@@ -1,4 +1,4 @@
-import axios, { type AxiosError, type AxiosRequestConfig } from 'axios'
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 
 // Primary axios instance used across the app
 export const api = axios.create({
@@ -13,14 +13,14 @@ export const refreshClient = axios.create({
 })
 
 // Attach access token (if any) from localStorage to each request
-api.interceptors.request.use((config: AxiosRequestConfig) => {
+api.interceptors.request.use((config) => {
   try {
     const token = localStorage.getItem('accessToken')
-    if (token && config.headers) {
+    if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
     }
   } catch (e) {
-    // ignore
+    console.log(e)
   }
   return config
 })
@@ -29,7 +29,7 @@ let isRefreshing = false
 let failedQueue: Array<{
   resolve: (value?: unknown) => void
   reject: (err: any) => void
-  config: AxiosRequestConfig
+  config: InternalAxiosRequestConfig
 }> = []
 
 const processQueue = (error: any, token: string | null = null) => {
@@ -47,7 +47,7 @@ const processQueue = (error: any, token: string | null = null) => {
 api.interceptors.response.use(
   (res) => res,
   (err: AxiosError) => {
-    const originalRequest = err.config as AxiosRequestConfig & { _retry?: boolean }
+    const originalRequest = err.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
     if (err.response && err.response.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {

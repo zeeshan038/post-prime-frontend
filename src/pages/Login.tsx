@@ -23,7 +23,7 @@ const Login: React.FC = () => {
     defaultValues: { email: '', password: '' },
   })
 
-  const { mutateAsync, isLoading } = useLogin()
+  const { mutateAsync, isPending } = useLogin()
   const navigate = useNavigate()
 
   const onSubmit = async (values: LoginValues) => {
@@ -84,10 +84,10 @@ const Login: React.FC = () => {
 
           <button
             type="submit"
-            disabled={isSubmitting || isLoading}
+            disabled={isSubmitting || isPending}
             className="w-full mt-2 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white py-2 text-sm font-medium transition disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {isSubmitting || isLoading ? 'Logging in...' : 'Log in'}
+            {isSubmitting || isPending ? 'Logging in...' : 'Log in'}
           </button>
         </form>
 

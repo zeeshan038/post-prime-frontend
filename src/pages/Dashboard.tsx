@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Row, Col, Card, Statistic, Radio, Table, Tag, Space, Spin } from 'antd'
 
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar, Legend, Cell } from 'recharts'
@@ -13,7 +13,6 @@ const Dashboard = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard', range],
     queryFn: () => getDashboard(range),
-    keepPreviousData: true,
   })
 
   const dashboard = data?.data ?? data ?? {}
@@ -27,7 +26,7 @@ const Dashboard = () => {
   const avgEngagement = totals.avgEngagementRate ?? 0
 
   const chartData = Array.isArray(dashboard?.chart)
-    ? dashboard.chart.map((c) => ({
+    ? dashboard.chart.map((c: any) => ({
         date: new Date(c.date).toLocaleDateString(undefined, {
           month: 'short',
           day: 'numeric',
@@ -107,22 +106,22 @@ const Dashboard = () => {
       {/* Stats Cards */}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={6}>
-          <Card variant="elevated" style={{ borderRadius: 16 }}>
+          <Card style={{ borderRadius: 16 }}>
             <Statistic title="Total Posts" value={totalPosts} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Card variant="elevated" style={{ borderRadius: 16 }}>
+          <Card style={{ borderRadius: 16 }}>
             <Statistic title="Total Engagement" value={totalEngagement} suffix=" interactions" />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Card variant="elevated" style={{ borderRadius: 16 }}>
+          <Card style={{ borderRadius: 16 }}>
             <Statistic title="Avg Engagement" value={avgEngagement} suffix="%" precision={1} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Card variant="elevated" style={{ borderRadius: 16 }}>
+          <Card style={{ borderRadius: 16 }}>
             <Statistic title="Scheduled Posts" value={totals.posts?.scheduled ?? 0} />
           </Card>
         </Col>
@@ -131,7 +130,7 @@ const Dashboard = () => {
       {/* Chart + Top Posts */}
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={14}>
-          <Card variant="elevated" style={{ borderRadius: 16, height: 400 }}>
+          <Card style={{ borderRadius: 16, height: 400 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ fontWeight: 600 }}>Engagement Trend</div>
               <Radio.Group value={String(range)} onChange={(e) => setRange(Number(e.target.value))}>
@@ -154,7 +153,7 @@ const Dashboard = () => {
         </Col>
 
         <Col xs={24} lg={10}>
-          <Card variant="elevated" title="Top Posts" style={{ borderRadius: 16, height: 400 }}>
+          <Card title="Top Posts" style={{ borderRadius: 16, height: 400 }}>
             <Table columns={topPostsColumns} dataSource={Array.isArray(topPostsData) ? topPostsData : []} pagination={false} rowKey="id" size="small" />
           </Card>
         </Col>
@@ -163,7 +162,7 @@ const Dashboard = () => {
       {/* Platform Chart + Optimal Times */}
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={14}>
-          <Card variant="elevated" title="Platform Performance" style={{ borderRadius: 16 }}>
+          <Card title="Platform Performance" style={{ borderRadius: 16 }}>
             <div style={{ width: '100%', height: 260 }}>
               <ResponsiveContainer>
                 <BarChart data={platformData}>
@@ -173,7 +172,7 @@ const Dashboard = () => {
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="engagements">
-                    {platformData.map((entry, index) => (
+                    {platformData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                     ))}
                   </Bar>
@@ -184,9 +183,9 @@ const Dashboard = () => {
         </Col>
 
         <Col xs={24} lg={10}>
-          <Card variant="elevated" title="Optimal Posting Times" style={{ borderRadius: 16 }}>
+          <Card title="Optimal Posting Times" style={{ borderRadius: 16 }}>
             <Space direction="vertical" style={{ width: '100%' }}>
-              {optimalTimesList.map((t, i) => (
+              {optimalTimesList.map((t: any, i: number) => (
                 <div key={i}>
                   <div style={{ fontWeight: 600 }}>{t.day} · {t.hour}</div>
                   <div style={{ color: '#555' }}>Avg: {t.avg}</div>

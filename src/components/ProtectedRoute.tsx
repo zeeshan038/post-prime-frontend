@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { type ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 
 type Props = {
-  children: JSX.Element
+  children: ReactNode
 }
 
 const ProtectedRoute: React.FC<Props> = ({ children }) => {
@@ -14,7 +14,7 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
-  return children
+  return <>{children}</>
 }
 
 export default ProtectedRoute

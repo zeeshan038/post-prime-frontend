@@ -28,7 +28,7 @@ const MainLayout: React.FC = () => {
       navigate('/login')
       message.success('Logged out successfully')
     } catch (error) {
-      message.error('Logout failed')
+      console.log(error)
     }
   }
 
