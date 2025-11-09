@@ -36,7 +36,8 @@ function getErrorPayload(err: unknown): ApiErrorPayload | null {
     const maybe = err as { response?: { data?: unknown } }
     const data = maybe.response?.data
     if (data && typeof data === 'object') {
-      return data
+      const obj = data as Record<string, unknown>
+      return obj as ApiErrorPayload
     }
   }
   return null
@@ -64,12 +65,10 @@ const Login: React.FC = () => {
   const { mutateAsync, isPending } = useLogin()
   const navigate = useNavigate()
   const [loginError, setLoginError] = useState<string | null>(null)
-  const [loginErrorRaw, setLoginErrorRaw] = useState<ApiErrorPayload | null>(null)
 
   const onSubmit = async (values: LoginValues) => {
     try {
       setLoginError(null)
-      setLoginErrorRaw(null)
       const res = await mutateAsync(values)
       const token = getTokenFromResponse(res)
       if (token) {
@@ -85,7 +84,6 @@ const Login: React.FC = () => {
       const serverMsg = getErrorMessage(errData, err)
       message.error(serverMsg)
       setLoginError(serverMsg)
-      setLoginErrorRaw(errData)
     }
   }
 
