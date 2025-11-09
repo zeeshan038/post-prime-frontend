@@ -1,0 +1,42 @@
+{
+  "projectRoot": {
+    "packageJson": "package.json",
+    "viteConfig": "vite.config.ts",
+    "tsconfigs": ["tsconfig.json", "tsconfig.app.json", "tsconfig.node.json"]
+  },
+  "src": {
+    "entry": "src/main.tsx",
+    "app": "src/App.tsx",
+    "styles": ["src/index.css", "src/App.css"],
+    "pages": {
+      "signup": "src/pages/Signup.tsx",
+      "login": "src/pages/Login.tsx"
+    },
+    "api": {
+      "auth": "src/api/auth.ts"
+    },
+    "lib": {
+      "axios": "src/lib/axios.ts"
+    },
+    "hooks": {
+      "useSignup": "src/hooks/useSignup.ts"
+    }
+  },
+  "routes": [
+    {
+      "path": "/signup",
+      "file": "src/pages/Signup.tsx",
+      "lazy": true
+    }
+  ],
+  "api": {
+    "baseURL": "http://localhost:3000/api",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/user/register",
+        "usedBy": "src/api/auth.ts::registerUser"
+      }
+    ]
+  }
+}
